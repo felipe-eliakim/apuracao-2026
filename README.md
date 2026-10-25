@@ -47,6 +47,8 @@ Observação: o AdSense exige aviso de cookies/consentimento para visitantes da 
 
 - **2026-10-25:** primeira versão, publicada no dia do 2º turno. Placar, mapa por estado com tons por força do líder, painel do estado selecionado, estados conquistados, região, evolução, 1º × 2º turno, vantagem por estado, andamento por estado, comparecimento/brancos/nulos, tabela ordenável, alternância 1º/2º turno, compartilhar.
 
+- **2026-10-25:** deploy contínuo no Netlify ligado ao GitHub (push na `main` publica sozinho).
+
 ## Pendências
 
 - Ligar anúncios (depende da aprovação do AdSense) + página de política de privacidade.
