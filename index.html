@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Apuração 2026 — Presidente ao vivo</title>
+  <meta name="description" content="Acompanhe a apuração da eleição para presidente de 2026 em tempo real: mapa do Brasil por estado, gráficos e dados atualizados a cada minuto com os números públicos do TSE.">
+  <meta property="og:title" content="Apuração 2026 — Presidente ao vivo">
+  <meta property="og:description" content="Mapa do Brasil, gráficos e números da apuração em tempo real, direto dos dados públicos do TSE.">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#101418">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23101418'/%3E%3Crect x='7' y='16' width='5' height='9' rx='1.5' fill='%231f5fc8'/%3E%3Crect x='14' y='9' width='5' height='16' rx='1.5' fill='%23c8102e'/%3E%3Crect x='21' y='13' width='5' height='12' rx='1.5' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <script src="config.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Pular para o conteúdo</a>
+  <header class="top">
+    <div class="wrap top-in">
+      <div class="brand">
+        <span class="logo" aria-hidden="true"><i></i><i></i><i></i></span>
+        <div>
+          <h1>Apuração 2026</h1>
+          <p id="round-sub" class="muted small"></p>
+        </div>
+      </div>
+      <nav class="rounds" aria-label="Turno">
+        <button data-round="2" aria-pressed="true">2º turno</button>
+        <button data-round="1" aria-pressed="false">1º turno</button>
+      </nav>
+      <div class="top-actions">
+        <button id="share" class="ghost">Compartilhar</button>
+        <button id="theme" class="ghost icon" aria-label="Alternar tema claro/escuro" title="Tema"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <section class="status-bar" aria-live="polite">
+      <div class="status-line">
+        <span id="live" class="live on"><i></i><span id="live-text">Ao vivo</span></span>
+        <span id="status" class="muted small">Carregando…</span>
+        <span id="countdown" class="muted small"></span>
+      </div>
+      <div class="big-prog">
+        <div class="big-prog-head"><b id="progress-pct">0%</b> <span>das seções apuradas</span> <span id="progress-detail" class="muted small"></span></div>
+        <div class="big-track"><span id="progress-bar" class="big-bar"></span></div>
+      </div>
+    </section>
+
+    <section class="card hero" aria-label="Placar nacional">
+      <div id="hero"></div>
+      <div id="cand-list" hidden></div>
+    </section>
+
+    <div class="ad" data-ad="top" hidden></div>
+
+    <section class="map-grid" id="map-card">
+      <div class="card map-card">
+        <div class="card-head"><h2>Quem lidera em cada estado</h2><p class="muted small">Cor do partido que lidera; quanto mais forte, maior a % dos votos válidos. Toque num estado para ver o detalhe.</p></div>
+        <div id="map" class="map"></div>
+        <div id="map-legend" class="map-legend"></div>
+      </div>
+      <aside class="card side" aria-live="polite">
+        <div class="side-head"><h2 id="side-title">Brasil</h2><button id="side-back" class="ghost small" hidden>← Brasil</button></div>
+        <div id="side-body"></div>
+      </aside>
+    </section>
+
+    <section class="charts">
+      <div class="card"><div class="card-head"><h2>Estados conquistados</h2><p class="muted small">Cada quadrado é um estado, com o líder atual.</p></div><div id="c-states"></div></div>
+      <div class="card"><div class="card-head"><h2>Por região</h2><p class="muted small">Divisão dos votos válidos somados por região.</p></div><div id="c-regions"></div></div>
+      <div class="card"><div class="card-head"><h2>Evolução da apuração</h2><p class="muted small">% dos votos válidos conforme as urnas são apuradas.</p></div><div id="c-evo"></div></div>
+      <div class="card" id="card-compare"><div class="card-head"><h2>1º turno × 2º turno</h2><p class="muted small">Quanto cada um cresceu desde 4 de outubro.</p></div><div id="c-compare"></div></div>
+      <div class="card tall"><div class="card-head"><h2>Vantagem por estado</h2><p class="muted small">Diferença em pontos percentuais entre os dois primeiros.</p></div><div id="c-margins"></div></div>
+      <div class="card tall"><div class="card-head"><h2>Andamento por estado</h2><p class="muted small">% das seções já apuradas.</p></div><div id="c-progress"></div></div>
+      <div class="card wide"><div class="card-head"><h2>Comparecimento, brancos e nulos</h2><p class="muted small">Brasil, sobre as seções já apuradas.</p></div><div id="c-turnout"></div></div>
+    </section>
+
+    <div class="ad" data-ad="middle" hidden></div>
+
+    <section class="card">
+      <div class="card-head"><h2>Todos os estados</h2><p class="muted small">Clique no título da coluna para ordenar, ou numa linha para ver no mapa.</p></div>
+      <div id="c-table" class="tbl-wrap"></div>
+    </section>
+
+    <div class="ad" data-ad="bottom" hidden></div>
+  </main>
+
+  <footer class="wrap foot muted small">
+    <p>Site independente, sem vínculo com o TSE. Números lidos dos arquivos públicos de <a href="https://resultados.tse.jus.br" rel="noopener">resultados.tse.jus.br</a> e atualizados a cada minuto. O resultado oficial é o divulgado pelo Tribunal Superior Eleitoral.</p>
+    <p>Mapa: malha territorial do IBGE.</p>
+  </footer>
+
+  <div id="tip" class="tip" role="tooltip" hidden></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
