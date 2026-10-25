@@ -2,6 +2,8 @@
 
 Site para acompanhar a apuração da eleição para **presidente de 2026** em tempo real: mapa do Brasil com a cor do partido que lidera em cada estado (e a % dele), placar nacional, gráficos e tabela. Funciona para o 1º turno (04/10/2026, já encerrado) e o 2º turno (25/10/2026).
 
+Ao vivo em **<https://apuracao-2026-500.netlify.app>**.
+
 Site independente, sem vínculo com o TSE. O resultado oficial é o divulgado pelo Tribunal Superior Eleitoral.
 
 ## Como funciona
