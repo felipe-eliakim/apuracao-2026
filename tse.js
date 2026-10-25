@@ -84,3 +84,28 @@ export async function fetchAll(round) {
   });
   return data;
 }
+
+// ---------- Municípios ----------
+// O TSE publica um arquivo por município. O andamento de todos os municípios
+// de um estado vem num arquivo só (…-ab.json), usado para saber quais mudaram.
+
+export async function fetchMunResult(round, uf, cd) {
+  const code = ROUNDS[round].code;
+  const res = await fetch(`${BASE}/${code}/dados/${uf}/${uf}${cd}-c0001-${fileCode(code)}-u.json`);
+  if (!res.ok) throw new Error(`TSE ${uf}${cd}: ${res.status}`);
+  return parse(await res.json());
+}
+
+// { codigoTSE: { done: seções apuradas, total, key: muda quando o município é atualizado } }
+export async function fetchStateProgress(round, uf) {
+  const code = ROUNDS[round].code;
+  const res = await fetch(`${BASE}/${code}/dados/${uf}/${uf}-${fileCode(code)}-ab.json`);
+  if (!res.ok) throw new Error(`TSE ab ${uf}: ${res.status}`);
+  const j = await res.json();
+  const out = {};
+  for (const a of j.abr ?? []) {
+    if (a.tpabr !== 'mun') continue;
+    out[a.cdabr] = { done: num(a.s?.st), total: num(a.s?.ts), key: `${a.s?.st}|${a.dt}|${a.ht}` };
+  }
+  return out;
+}

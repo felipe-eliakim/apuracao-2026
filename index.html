@@ -57,8 +57,17 @@
 
     <section class="map-grid" id="map-card">
       <div class="card map-card">
-        <div class="card-head"><h2>Quem lidera em cada estado</h2><p class="muted small">Cor do partido que lidera; quanto mais forte, maior a % dos votos válidos. Toque num estado para ver o detalhe.</p></div>
+        <div class="card-head map-head">
+          <div><h2 id="map-title">Quem lidera em cada estado</h2><p id="map-help" class="muted small"></p></div>
+          <button id="map-back" class="ghost small" type="button">← Brasil</button>
+        </div>
+        <div id="mun-tools" class="mun-tools" hidden>
+          <input id="mun-search" type="search" list="mun-list" placeholder="Buscar município…" aria-label="Buscar município" autocomplete="off">
+          <datalist id="mun-list"></datalist>
+          <span id="mun-status" class="muted small" aria-live="polite"></span>
+        </div>
         <div id="map" class="map"></div>
+        <div id="munmap" class="map" hidden></div>
         <div id="map-legend" class="map-legend"></div>
       </div>
       <aside class="card side" aria-live="polite">
@@ -93,6 +102,13 @@
   </footer>
 
   <div id="tip" class="tip" role="tooltip" hidden></div>
+  <svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
+    <defs>
+      <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <rect width="8" height="8" class="hatch-bg"/><line x1="0" y1="0" x2="0" y2="8" class="hatch-line"/>
+      </pattern>
+    </defs>
+  </svg>
   <script type="module" src="app.js"></script>
 </body>
 </html>

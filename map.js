@@ -30,10 +30,8 @@ function outsidePositions() {
 
 export function createMap(container, { onHover, onLeave, onSelect }) {
   const svg = el('svg', { viewBox: VIEWBOX, class: 'map-svg', role: 'img', 'aria-label': 'Mapa do Brasil com o candidato que lidera em cada estado' });
-  const defs = el('defs', {}, svg);
-  const pat = el('pattern', { id: 'hatch', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
-  el('rect', { width: 8, height: 8, class: 'hatch-bg' }, pat);
-  el('line', { x1: 0, y1: 0, x2: 0, y2: 8, class: 'hatch-line' }, pat);
+  // Padrão listrado (#hatch) fica num <svg> de definições no index.html,
+  // para servir também ao mapa de municípios quando este mapa está escondido.
 
   const gShapes = el('g', {}, svg);
   const gLines = el('g', { class: 'leaders' }, svg);

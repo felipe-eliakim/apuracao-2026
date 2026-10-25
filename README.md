@@ -15,7 +15,8 @@ Site independente, sem vínculo com o TSE. O resultado oficial é o divulgado pe
   - Fotos: `/oficial/ele2026/<eleição>/fotos/br/<sqcand>.jpeg`.
 - A página busca os 29 arquivos (~3 KB cada) a cada 60 s — mesmo tempo do cache que o TSE põe nos arquivos — e para quando o TSE marca a totalização como encerrada. Pausa com a aba escondida.
 - Um arquivo que falhar não derruba a página (os outros aparecem normalmente).
-- **Mapa por estado, não por município:** o TSE publica um arquivo por município (5.570), pesado demais para atualizar ao vivo no navegador.
+- **Mapa de municípios ao clicar num estado:** o TSE publica um arquivo por município (~1 KB compactado cada), sem arquivo único com todos. Ao abrir um estado o site baixa o andamento do estado (`<uf>-e00<eleição>-ab.json`, um arquivo) e só então os municípios que têm seção apurada, 20 por vez, pintando o mapa aos poucos. Nas atualizações seguintes baixa de novo só os municípios cujo andamento mudou. Primeira abertura de SP ≈ 600 KB.
+- Contornos dos municípios em `mun/<uf>.json` (2 MB no total, baixado só o estado aberto), gerados por `ops/gerar-municipios.py` a partir da malha do IBGE + tabela de municípios do TSE (`config/mun-e006258-cm.json`, que liga o código IBGE ao do TSE).
 - **Linha de evolução:** o TSE não publica histórico; cada navegador guarda (no `localStorage`) os boletins que viu com a página aberta.
 - Contorno dos estados: malha do IBGE (`servicodados.ibge.gov.br/api/v3/malhas`, qualidade mínima), convertida para caminhos SVG em `geo.js`.
 
@@ -29,6 +30,8 @@ Site independente, sem vínculo com o TSE. O resultado oficial é o divulgado pe
 | `map.js` / `geo.js` | mapa SVG e contornos dos estados |
 | `charts.js` | gráficos (SVG/HTML desenhados à mão) |
 | `colors.js` | cores dos partidos e tons do mapa |
+| `munmap.js` / `munload.js` / `mun/` | mapa de municípios, carregamento dos resultados por cidade, contornos |
+| `ops/gerar-municipios.py` | gera `mun/*.json` |
 | `ads.js` / `config.js` | anúncios (Google AdSense), desligados por padrão |
 
 ## Anúncios
@@ -48,8 +51,9 @@ Observação: o AdSense exige aviso de cookies/consentimento para visitantes da 
 - **2026-10-25:** primeira versão, publicada no dia do 2º turno. Placar, mapa por estado com tons por força do líder, painel do estado selecionado, estados conquistados, região, evolução, 1º × 2º turno, vantagem por estado, andamento por estado, comparecimento/brancos/nulos, tabela ordenável, alternância 1º/2º turno, compartilhar.
 
 - **2026-10-25:** deploy contínuo no Netlify ligado ao GitHub (push na `main` publica sozinho).
+- **2026-10-25:** mapa de municípios ao clicar num estado: cor do líder em cada cidade, busca de município, resultado da cidade no painel lateral, contagem de municípios por candidato; continua aberto ao trocar de turno; Esc ou "← Brasil" volta.
+- Corrigido: abrindo direto no 1º turno, a busca do placar nacional (usada na comparação) sobrescrevia os dados dos estados.
 
 ## Pendências
 
 - Ligar anúncios (depende da aprovação do AdSense) + página de política de privacidade.
-- Mapa por município ao clicar num estado (exige baixar centenas de arquivos por UF; avaliar).

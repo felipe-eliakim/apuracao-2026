@@ -5,6 +5,8 @@ import { partyColor, SHADES } from './colors.js';
 import * as C from './charts.js';
 import { fmtPct, fmtInt, esc, title } from './format.js';
 import { initAds } from './ads.js';
+import { createMunMap, loadMunGeo, munTooltip } from './munmap.js';
+import { createMunLoader } from './munload.js';
 
 const POLL_MS = 60_000; // o próprio TSE marca os arquivos com cache de 60 s
 const $ = (id) => document.getElementById(id);
@@ -12,7 +14,9 @@ const $ = (id) => document.getElementById(id);
 const state = {
   round: Number(new URLSearchParams(location.search).get('turno')) === 1 ? 1 : 2,
   data: { 1: null, 2: null },
-  selected: null,
+  selected: null,     // UF aberta no mapa de municípios
+  selectedMun: null,  // código TSE do município escolhido
+  munGeo: null,       // contornos/nome dos municípios da UF aberta
   sort: 'name',
   nextAt: 0,
   loading: false,
@@ -64,10 +68,69 @@ document.addEventListener('pointerout', (ev) => {
 const map = createMap($('map'), {
   onHover: (uf, ev) => showTip(stateTooltip(uf, cur()?.ufs[uf]), ev),
   onLeave: hideTip,
-  onSelect: (uf) => { state.selected = state.selected === uf ? null : uf; render(); },
+  onSelect: (uf) => openState(uf),
 });
 
 const cur = () => state.data[state.round];
+
+// ---------- Municípios ----------
+const munMap = createMunMap($('munmap'), {
+  onHover: (cd, ev) => {
+    const ctx = munLoader.ctx, m = state.munGeo?.mun[cd];
+    if (m) showTip(munTooltip(m.n, UFS[state.selected][0], ctx?.results[cd], ctx?.prog[cd]), ev);
+  },
+  onLeave: hideTip,
+  onSelect: (cd) => { state.selectedMun = state.selectedMun === cd ? null : cd; render(); },
+});
+const munLoader = createMunLoader((ctx) => {
+  if (ctx.uf === state.selected && ctx.round === state.round) render();
+});
+
+async function openState(uf) {
+  if (uf === 'zz') return;
+  state.selected = uf;
+  state.selectedMun = null;
+  state.munGeo = null;
+  $('mun-search').value = '';
+  render();
+  $('map-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  try {
+    await munMap.show(uf);
+    const geo = await loadMunGeo(uf);
+    if (state.selected !== uf) return;
+    state.munGeo = geo;
+    $('mun-list').innerHTML = Object.values(geo.mun).map((m) => `<option value="${esc(title(m.n))}">`).join('');
+    render();
+    munLoader.open(state.round, uf, Object.keys(geo.mun));
+  } catch {
+    $('mun-status').textContent = 'Não foi possível carregar o mapa do estado.';
+  }
+}
+
+function closeState() {
+  state.selected = null;
+  state.selectedMun = null;
+  state.munGeo = null;
+  munLoader.close();
+  munMap.reset();
+  render();
+}
+
+const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+function findMun(text) {
+  const q = norm(text);
+  if (!q || !state.munGeo) return null;
+  const all = Object.entries(state.munGeo.mun);
+  return (all.find(([, m]) => norm(m.n) === q) ?? all.find(([, m]) => norm(m.n).startsWith(q)))?.[0] ?? null;
+}
+
+function munStatusText(ctx) {
+  if (!state.munGeo || !ctx) return 'Carregando municípios…';
+  const n = Object.keys(state.munGeo.mun).length;
+  if (ctx.loading) return `Baixando resultados: ${ctx.loading.done} de ${ctx.loading.total} municípios…`;
+  const withVotes = Object.values(ctx.results).filter((r) => r.cands.some((c) => c.votes)).length;
+  return `${withVotes} de ${n} municípios com votos apurados`;
+}
 
 // ---------- Desenho ----------
 function renderLegend(d) {
@@ -79,18 +142,66 @@ function renderLegend(d) {
     <div class="ml-row"><span class="ml-sw hatch"></span><span class="muted">sem votos apurados</span></div>`;
 }
 
+// Quantos municípios cada candidato lidera no estado aberto.
+function munWins(ctx) {
+  const by = {};
+  for (const r of Object.values(ctx?.results ?? {})) {
+    const lead = r.cands[0];
+    if (lead?.votes) (by[lead.n] ??= { c: lead, k: 0 }).k++;
+  }
+  const list = Object.values(by).sort((a, b) => b.k - a.k);
+  if (!list.length) return '';
+  return `<div class="mun-wins"><div class="tile-l">Municípios em que lidera</div>
+    <ul class="legend">${list.map((x) => `<li><span class="dot" style="background:${partyColor(x.c.party)}"></span>${esc(title(x.c.name))} <b>${fmtInt(x.k)}</b></li>`).join('')}</ul></div>`;
+}
+
 function renderSide(d) {
-  const uf = state.selected;
-  const r = uf ? d?.ufs[uf] : d?.br;
-  $('side-title').textContent = uf ? UFS[uf][0] : 'Brasil';
+  const uf = state.selected, cd = state.selectedMun;
+  const ctx = munLoader.ctx;
+  let r, name, back;
+  if (uf && cd) {
+    r = ctx?.results[cd];
+    name = `${title(state.munGeo?.mun[cd]?.n ?? '')} (${uf.toUpperCase()})`;
+    back = `← ${UFS[uf][0]}`;
+  } else if (uf) {
+    r = d?.ufs[uf]; name = UFS[uf][0]; back = '← Brasil';
+  } else {
+    r = d?.br; name = 'Brasil';
+  }
+  $('side-title').textContent = name;
   $('side-back').hidden = !uf;
-  if (!r) { $('side-body').innerHTML = '<p class="muted">Sem dados ainda.</p>'; return; }
+  $('side-back').textContent = back ?? '';
+  if (!r) {
+    const p = cd && ctx?.prog[cd];
+    $('side-body').innerHTML = `<p class="muted">${p && p.done === 0 ? 'Nenhuma seção apurada aqui ainda.' : 'Sem dados ainda.'}</p>`;
+    return;
+  }
   $('side-body').innerHTML = `
     <div class="side-prog"><span>${fmtPct(r.progress)} das seções apuradas</span>
       <span class="pg-track"><span class="pg-bar" style="width:${r.progress}%"></span></span>
       <span class="muted small">${fmtInt(r.sectionsDone)} de ${fmtInt(r.sections)} seções · boletim ${esc(r.time || '—')}</span></div>
     ${C.candList(r, state.round)}
+    ${uf && !cd ? munWins(ctx) : ''}
     ${C.turnout(r)}`;
+}
+
+function renderMapCard(d) {
+  const uf = state.selected;
+  $('map').hidden = Boolean(uf);
+  $('munmap').hidden = !uf;
+  $('mun-tools').hidden = !uf;
+  $('map-back').hidden = !uf;
+  $('map-title').textContent = uf ? `Municípios — ${UFS[uf][0]}` : 'Quem lidera em cada estado';
+  $('map-help').textContent = uf
+    ? 'Cor do candidato que lidera em cada município. Toque numa cidade ou use a busca.'
+    : 'Cor do partido que lidera; quanto mais forte, maior a % dos votos válidos. Toque num estado para ver os municípios.';
+  if (uf) {
+    const ctx = munLoader.ctx;
+    munMap.update(ctx?.results ?? {}, state.selectedMun);
+    $('mun-status').textContent = munStatusText(ctx);
+  } else {
+    map.update(d?.ufs ?? {}, null);
+  }
 }
 
 function render() {
@@ -114,7 +225,7 @@ function render() {
   $('cand-list').innerHTML = state.round === 1 ? C.candList(br, 1) : '';
   $('cand-list').hidden = state.round !== 1;
 
-  map.update(d?.ufs ?? {}, state.selected);
+  renderMapCard(d);
   renderLegend(d);
   renderSide(d);
 
@@ -153,14 +264,21 @@ async function load(round = state.round) {
   } finally {
     state.loading = false;
     state.nextAt = Date.now() + POLL_MS;
-    if (round === state.round) render();
+    if (round === state.round) {
+      render();
+      // Estado aberto: atualiza só os municípios que mudaram.
+      if (state.selected && !state.data[round]?.br?.finished) munLoader.update();
+    }
   }
 }
 
 // Linha do 1º turno usada na comparação (arquivo nacional só, já está fechado).
 async function loadFirstRoundBr() {
-  if (state.data[1]?.br) return;
-  try { state.data[1] = { br: await fetchResult(1, 'br'), ufs: {} }; render(); } catch { /* comparação fica "carregando" */ }
+  if (state.data[1]?.br || state.round === 1) return; // no 1º turno, load() já traz tudo
+  try {
+    const br = await fetchResult(1, 'br');
+    if (!state.data[1]) { state.data[1] = { br, ufs: {} }; render(); } // não sobrescreve dados completos
+  } catch { /* comparação fica "carregando" */ }
 }
 
 setInterval(() => {
@@ -179,18 +297,32 @@ document.querySelectorAll('[data-round]').forEach((b) => b.addEventListener('cli
   const r = Number(b.dataset.round);
   if (r === state.round) return;
   state.round = r;
-  state.selected = null;
   history.replaceState(null, '', r === 1 ? '?turno=1' : location.pathname);
+  // Estado aberto continua aberto, com os municípios do outro turno.
+  if (state.selected && state.munGeo) munLoader.open(r, state.selected, Object.keys(state.munGeo.mun));
   render();
   const loaded = state.data[r]?.ufs && Object.keys(state.data[r].ufs).length;
   if (!loaded || !state.data[r].br.finished) load(r);
 }));
-$('side-back').addEventListener('click', () => { state.selected = null; render(); });
+$('side-back').addEventListener('click', () => {
+  if (state.selectedMun) { state.selectedMun = null; render(); } else closeState();
+});
+$('map-back').addEventListener('click', closeState);
+$('mun-search').addEventListener('change', (ev) => {
+  const cd = findMun(ev.target.value);
+  if (cd) { state.selectedMun = cd; render(); }
+});
+$('mun-search').addEventListener('keydown', (ev) => {
+  if (ev.key === 'Enter') { const cd = findMun(ev.target.value); if (cd) { state.selectedMun = cd; render(); } }
+});
 $('c-table').addEventListener('click', (ev) => {
   const s = ev.target.closest('[data-sort]');
   if (s) { state.sort = s.dataset.sort; render(); return; }
   const tr = ev.target.closest('tr[data-uf]');
-  if (tr && tr.dataset.uf !== 'zz') { state.selected = tr.dataset.uf; render(); $('map-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  if (tr && tr.dataset.uf !== 'zz') openState(tr.dataset.uf);
+});
+document.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape' && state.selected && !ev.target.closest('input')) closeState();
 });
 
 // Crosshair da linha de evolução
