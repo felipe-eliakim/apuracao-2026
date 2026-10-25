@@ -7,6 +7,7 @@ import { fmtPct, fmtInt, esc, title } from './format.js';
 import { initAds } from './ads.js';
 import { createMunMap, loadMunGeo, munTooltip } from './munmap.js';
 import { createMunLoader } from './munload.js';
+import { initTracking, trackState } from './track.js';
 
 const POLL_MS = 60_000; // o próprio TSE marca os arquivos com cache de 60 s
 const $ = (id) => document.getElementById(id);
@@ -88,6 +89,7 @@ const munLoader = createMunLoader((ctx) => {
 
 async function openState(uf) {
   if (uf === 'zz') return;
+  trackState(uf);
   state.selected = uf;
   state.selectedMun = null;
   state.munGeo = null;
@@ -374,8 +376,9 @@ $('share').addEventListener('click', async () => {
   const text = `Apuração ${ROUNDS[state.round].label} 2026 (${fmtPct(br?.progress ?? 0, 1)} apurado): ` +
     t.map((c) => `${title(c.name)} ${fmtPct(c.pct)}`).join(' × ');
   try {
-    if (navigator.share) await navigator.share({ title: 'Apuração 2026', text, url: location.href });
-    else { await navigator.clipboard.writeText(`${text} ${location.href}`); $('share').textContent = 'Link copiado'; setTimeout(() => { $('share').textContent = 'Compartilhar'; }, 2000); }
+    const url = location.origin + location.pathname + (state.round === 1 ? '?turno=1&o=compartilhar' : '?o=compartilhar');
+    if (navigator.share) await navigator.share({ title: 'Apuração 2026', text, url });
+    else { await navigator.clipboard.writeText(`${text} ${url}`); $('share').textContent = 'Link copiado'; setTimeout(() => { $('share').textContent = 'Compartilhar'; }, 2000); }
   } catch { /* cancelado */ }
 });
 
@@ -383,3 +386,4 @@ render();
 load();
 loadFirstRoundBr();
 initAds();
+initTracking(state.round);

@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /stats.html
+Disallow: /api/
 
 Sitemap: https://apuracao-2026-500.netlify.app/sitemap.xml

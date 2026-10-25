@@ -13,3 +13,13 @@
   for = "/*.js"
   [headers.values]
     Cache-Control = "public, max-age=300"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[[headers]]
+  for = "/stats.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"

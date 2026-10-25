@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Visitas — Apuração 2026</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .st-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+    .st-grid .tile-v { font-size: 30px; }
+    .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .hours { display: flex; align-items: flex-end; gap: 2px; height: 180px; border-bottom: 1px solid var(--line); }
+    .hours span { flex: 1; background: var(--ink-2); border-radius: 3px 3px 0 0; min-height: 2px; }
+    .hours-ax { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-2); margin-top: 4px; }
+    .login { max-width: 420px; margin: 60px auto; }
+    .login input { width: 100%; font: inherit; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); margin: 10px 0; }
+    @media (max-width: 800px) { .st-grid { grid-template-columns: repeat(2, 1fr); } .cols { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="top"><div class="wrap top-in"><div class="brand"><div><h1>Visitas</h1><p class="muted small">Apuração 2026 · contador anônimo próprio</p></div></div>
+    <div class="top-actions"><a class="ghost" href="./">Ver o site</a><button id="reload" class="ghost" type="button">Atualizar</button><button id="logout" class="ghost" type="button">Sair</button></div></div></header>
+  <main class="wrap">
+    <form id="login" class="card login" hidden>
+      <h2>Senha do painel</h2>
+      <p class="muted small">A senha fica guardada só neste navegador.</p>
+      <label for="tok" class="small">Senha</label>
+      <input id="tok" type="password" autocomplete="current-password" required>
+      <button class="ghost" type="submit">Entrar</button>
+      <p id="err" class="small" style="color:#c8102e" role="alert"></p>
+    </form>
+    <div id="out" hidden></div>
+  </main>
+  <div id="tip" class="tip" role="tooltip" hidden></div>
+  <script type="module" src="stats.js"></script>
+</body>
+</html>

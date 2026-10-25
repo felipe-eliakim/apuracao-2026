@@ -1,0 +1,9 @@
+{
+  "name": "apuracao-2026",
+  "private": true,
+  "type": "module",
+  "description": "Só as funções do Netlify (contador de visitas) usam dependência; o site em si não tem build.",
+  "dependencies": {
+    "@netlify/blobs": "11.1.6"
+  }
+}
