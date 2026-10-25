@@ -53,7 +53,9 @@ Observação: o AdSense exige aviso de cookies/consentimento para visitantes da 
 - **2026-10-25:** deploy contínuo no Netlify ligado ao GitHub (push na `main` publica sozinho).
 - **2026-10-25:** mapa de municípios ao clicar num estado: cor do líder em cada cidade, busca de município, resultado da cidade no painel lateral, contagem de municípios por candidato; continua aberto ao trocar de turno; Esc ou "← Brasil" volta.
 - Corrigido: abrindo direto no 1º turno, a busca do placar nacional (usada na comparação) sobrescrevia os dados dos estados.
+- **2026-10-25:** divulgação: imagem de prévia do link (`og-image.png`, gerada de `ops/og.html` com o Chrome sem janela), etiquetas Open Graph/Twitter, `robots.txt`, `sitemap.xml`, chave IndexNow (arquivo `<chave>.txt` na raiz) e aviso no topo quando o TSE fica 20 min ou mais sem boletim novo (no 2º turno o TSE pausou a divulgação às 17h06 porque o STF prorrogou a votação até 19h).
 
 ## Pendências
 
-- Ligar anúncios (depende da aprovação do AdSense) + página de política de privacidade.
+- Ligar anúncios: o AdSense não aceita subdomínio `*.netlify.app` (o `ads.txt` precisa ficar na raiz de um domínio seu) — exige domínio próprio, aprovação do Google e página de política de privacidade.
+- Google Search Console: precisa do dono do site verificar (meta tag ou arquivo).

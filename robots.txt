@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://apuracao-2026-500.netlify.app/sitemap.xml

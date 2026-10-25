@@ -256,6 +256,7 @@ async function load(round = state.round) {
       state.data[round] = d;
       pushHist(round, d.br);
       $('status').textContent = `Boletim TSE ${d.br.date} ${d.br.time}` + (d.errors ? ` · ${d.errors} arquivo(s) sem resposta` : '');
+      renderStale(d.br);
     } else {
       $('status').textContent = 'TSE sem resposta, tentando de novo em 1 min';
     }
@@ -270,6 +271,17 @@ async function load(round = state.round) {
       if (state.selected && !state.data[round]?.br?.finished) munLoader.update();
     }
   }
+}
+
+// Aviso quando o TSE passa muito tempo sem boletim novo (ex.: apuração pausada).
+function renderStale(br) {
+  const el = $('stale');
+  const [dd, mm, yy] = (br.date || '').split('/');
+  const t = new Date(`${yy}-${mm}-${dd}T${br.time || '00:00:00'}-03:00`).getTime();
+  const min = Math.floor((Date.now() - t) / 60000);
+  const show = !br.finished && br.progress < 100 && min >= 20 && min < 24 * 60;
+  el.hidden = !show;
+  if (show) el.textContent = `O TSE não publica boletim novo há ${min >= 60 ? Math.floor(min / 60) + ' h ' + (min % 60) + ' min' : min + ' min'}. O site segue checando a cada minuto e mostra os números assim que saírem.`;
 }
 
 // Linha do 1º turno usada na comparação (arquivo nacional só, já está fechado).
