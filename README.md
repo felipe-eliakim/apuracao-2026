@@ -46,6 +46,16 @@ Os espaços de anúncio (abaixo do placar, entre os gráficos e antes do rodapé
 
 Observação: o AdSense exige aviso de cookies/consentimento para visitantes da Europa; para tráfego só do Brasil a LGPD pede pelo menos uma política de privacidade explicando o uso de cookies de anúncio — criar essa página antes de ligar os anúncios.
 
+## Contador de visitas
+
+Contador próprio e anônimo, sem serviço de terceiros: `track.js` manda um evento quando a aba abre (origem do link, celular/computador, turno) e outro quando a aba some (segundos visível, estados abertos). Nada de cookie, IP ou identificador; "aparelhos diferentes" é decidido no navegador (marca de data no `localStorage`).
+
+- Funções do Netlify: `netlify/functions/hit.mjs` (grava cada evento no Netlify Blobs, store `visitas`) e `stats.mjs` (agrega por hora, consolida horas fechadas em `agg/<hora>` e apaga os brutos). Únicas partes com dependência (`@netlify/blobs`).
+- Painel: `/stats.html`, pede a senha `STATS_TOKEN` (variável de ambiente no Netlify; cópia local em `~/.config/apuracao-2026/senha-painel-visitas`, fora do git). O site em si não pede senha.
+- Plano grátis do Netlify não tem variável "secreta" (dá Forbidden): a senha é variável comum, visível só para quem entra na conta do Netlify.
+- Limites (plano grátis): 125 mil chamadas de função por mês — cada visita gasta 2 (abrir + sair), ou seja ~60 mil visitas/mês. Se estourar, o contador para de gravar e o site continua normal.
+- Link compartilhado pelo botão do site leva `?o=compartilhar`, para medir quanto o compartilhamento traz. Para medir uma divulgação específica, compartilhe o link com `?o=nome` (ex.: `?o=grupo-igreja`).
+
 ## Roadmap
 
 - **2026-10-25:** primeira versão, publicada no dia do 2º turno. Placar, mapa por estado com tons por força do líder, painel do estado selecionado, estados conquistados, região, evolução, 1º × 2º turno, vantagem por estado, andamento por estado, comparecimento/brancos/nulos, tabela ordenável, alternância 1º/2º turno, compartilhar.
@@ -54,6 +64,7 @@ Observação: o AdSense exige aviso de cookies/consentimento para visitantes da 
 - **2026-10-25:** mapa de municípios ao clicar num estado: cor do líder em cada cidade, busca de município, resultado da cidade no painel lateral, contagem de municípios por candidato; continua aberto ao trocar de turno; Esc ou "← Brasil" volta.
 - Corrigido: abrindo direto no 1º turno, a busca do placar nacional (usada na comparação) sobrescrevia os dados dos estados.
 - **2026-10-25:** divulgação: imagem de prévia do link (`og-image.png`, gerada de `ops/og.html` com o Chrome sem janela), etiquetas Open Graph/Twitter, `robots.txt`, `sitemap.xml`, chave IndexNow (arquivo `<chave>.txt` na raiz) e aviso no topo quando o TSE fica 20 min ou mais sem boletim novo (no 2º turno o TSE pausou a divulgação às 17h06 porque o STF prorrogou a votação até 19h).
+- **2026-10-25:** contador de visitas anônimo + painel `/stats.html`; tirado o endereço do Netlify da imagem de prévia.
 
 ## Pendências
 
