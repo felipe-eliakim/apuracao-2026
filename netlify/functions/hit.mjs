@@ -25,7 +25,7 @@ export default async (req) => {
   const hour = now.toISOString().slice(0, 13); // UTC, ex.: 2026-10-25T22
   const key = `raw/${hour}/${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`;
   await getStore('visitas').setJSON(key, ev);
-  return new Response('', { status: 204 });
+  return new Response(null, { status: 204 });
 };
 
 export const config = { path: '/api/hit' };
